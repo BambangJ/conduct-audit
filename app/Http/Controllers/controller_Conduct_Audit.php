@@ -2,20 +2,31 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\model_Conduct_Audit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+use App\Models\TmqmAuditChecklist;
+use App\Models\TmqmAuditQuestion;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 class controller_Conduct_Audit extends Controller
 {
+    protected $i_id_audit_cklsnmbr = "";
+
     // Menampilkan halaman utama
     public function index()
     {
-        // Menampilkan halaman utama
-        return view('index');
+        return view('audit_program');
     }
 
-    // Menampilkan tabel audit
+    // Menampilkan halaman untuk NCR
+    public function createNCR()
+    {
+        return view('ncr.index');
+    }
+
+    // Menampilkan halaman tabel audit
     public function showAuditTable()
     {
         return view('audit_table');
@@ -27,10 +38,36 @@ class controller_Conduct_Audit extends Controller
         return view('create_audit_checklist');
     }
 
-    // Proses menyimpan checklist audit
+    // Menampilkan halaman update checklist audit
+    public function updateAuditChecklist()
+    {
+        return view('update_audit_checklist');
+    }
+
+    // Menampilkan halaman meeting audit checklist
+    public function meetingAuditChecklist()
+    {
+        return view('audit_meeting');
+    }
+
+    // Proses menyimpan checklist audit dan audit questions
     public function store(Request $request)
     {
-        // Validasi input
+
+        DB::transaction(function () use ($request) {
+            if ($this->storeAuditChecklist($request)) {
+                $this->storeAuditQuestions($request);
+            } else {
+                throw new \Exception('Gagal memasukkan data audit checklist.');
+            }
+        });
+        return redirect()->route('audit.index')->with('success', 'Audit checklist and questions saved successfully!');
+    }
+
+    // Menyimpan data audit checklist
+    public function storeAuditChecklist(Request $request)
+    {
+        Log::info('Memulai penyimpanan audit checklist', ['request' => $request->all()]);
         $request->validate([
             'audit_plan_no' => 'required|string|max:12',
             'audit_type' => 'required|string|max:40',
@@ -41,45 +78,49 @@ class controller_Conduct_Audit extends Controller
             'concurrence' => 'required|string|max:12',
         ]);
 
-        // Buat ID Audit Checklist berdasarkan format: Audit Type / Program Code / tiga angka
+
+        // Generate Audit Checklist Number
         $auditTypeInitials = strtoupper(substr($request->audit_type, 0, 2));
         $programCode = strtoupper($request->program_code);
 
-        // Ambil angka terakhir di database
-        $lastAudit = model_Conduct_Audit::where('i_id_audit_cklsnmbr', 'LIKE', "$auditTypeInitials/$programCode/%")
-            ->orderBy('i_id_audit_cklsnmbr', 'desc')
+        $lastAudit = TmqmAuditChecklist::where('i_id_audchknbr', 'LIKE', "$auditTypeInitials/$programCode/%")
+            ->orderBy('i_id_audchknbr', 'desc')
             ->first();
 
-        $newNumber = $lastAudit ? str_pad(((int)substr($lastAudit->i_id_audit_cklsnmbr, -3)) + 1, 3, '0', STR_PAD_LEFT) : '001';
-        $i_id_audit_cklsnmbr = "$auditTypeInitials/$programCode/$newNumber";
+        $newNumber = $lastAudit ? str_pad(((int)substr($lastAudit->i_id_audchknbr, -3)) + 1, 3, '0', STR_PAD_LEFT) : '001';
+        $this->i_id_audit_cklsnmbr = "$auditTypeInitials/$programCode/$newNumber";
 
-        // Simpan ke database
-        try {
-            model_Conduct_Audit::create([
-                'i_id_audit_cklsnmbr' => $i_id_audit_cklsnmbr,
-                'i_id_aud_plnnbr' => $request->audit_plan_no,
-                'n_aud_type' => $request->audit_type,
-                'i_id_prgm_code' => $request->program_code,
-                'n_aud_plan' => $request->subject,
-                'd_actl_start' => $request->date_of_audit,
-                'i_id_area_mngr' => $request->area_manager,
-                'i_id_cncrnc' => $request->concurrence,
-            ]);
 
-            // Redirect ke halaman utama (index) jika sukses
-            return redirect()->route('audit.index')->with('success', 'Data audit berhasil disimpan');
-        } catch (\Exception $e) {
-            // Jika gagal, tampilkan error dan log error
-            Log::error('Error saat menyimpan data: ' . $e->getMessage());
-            return redirect()->route('audit.index')->with('error', 'Terjadi kesalahan saat menyimpan data.');
-        }
+        TmqmAuditChecklist::create([
+            'i_id_audchknbr' => $this->i_id_audit_cklsnmbr,
+            'i_id_audplnnbr' => $request->audit_plan_no,
+            'n_aud_type' => $request->audit_type,
+            'i_id_pgmcode' => $request->program_code,
+            'n_aud_plan' => $request->subject,
+            'd_actl_audstart' => $request->date_of_audit,
+            'i_id_areamgr' => $request->area_manager,
+            'i_id_cncrnc' => $request->concurrence // Menyimpan waktu saat ini
+        ]);
+
+        return true;
     }
 
-    // Proses memperbarui checklist audit
-    public function updateAuditChecklist(Request $request)
+    // Menyimpan data audit questions
+    public function storeAuditQuestions(Request $request)
     {
-        // Logika untuk memperbarui checklist audit
-        // Ambil data dari $request dan proses sesuai kebutuhan
-        return redirect()->route('audit.table')->with('status', 'Checklist audit berhasil diperbarui.');
+        $auditDataArray = json_decode($request->input('audit_details'), true);
+
+        foreach ($auditDataArray as $auditData) {
+            TmqmAuditQuestion::create([
+                'i_id_audchknbr' => $this->i_id_audit_cklsnmbr ?? 'DEFAULT_ID',
+                'i_id_reff' => $auditData['reference'],
+                'n_audit_question' => $auditData['question'],
+                'n_audit_findings' => $auditData['findings'],
+                'n_objective_evidence' => $auditData['evidence'] ?? null,
+                'n_note' => $auditData['note'] ?? null,
+                'n_attachment' => $auditData['attachment'] ?? null, // Menyimpan waktu saat ini
+            ]);
+        }
+        return redirect()->route('audit.index')->with('success', 'Audit checklist and questions saved successfully!');
     }
 }

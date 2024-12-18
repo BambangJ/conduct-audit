@@ -4,6 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Audit Sidebar')</title>
     <!-- Bootstrap and Font Awesome -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
@@ -28,7 +29,8 @@
                         <li><a href="{{ route('audit.create') }}"><i class="fas fa-plus-circle mr-2"></i>Create Audit Checklist</a></li>
 
                         <li><a href="{{ route('audit.update') }}"><i class="fas fa-edit mr-2"></i>Update Audit Checklist</a></li>
-                        <li><a href="#"><i class="fas fa-check-circle mr-2"></i>Verifikasi Audit Checklist</a></li>
+                        <li><a href="#"><i class="fas fa-check-circle mr-2"></i>Approval Audit Checklist</a></li>
+                        <li><a href="{{ route('ncr.create') }}"><i class="fas fa-check-circle mr-2"></i>Create Nonconformity Report</a></li>
                     </ul>
                 </li>
             </ul>

@@ -16,10 +16,15 @@ use App\Http\Controllers\controller_Conduct_Audit;
 */
 
 Route::get('/', [controller_Conduct_Audit::class, 'index'])->name('audit.index');
+Route::get('/fetch-sap-data', [controller_Conduct_Audit::class, 'fetchData']);
 
+Route::get('/ncr', [controller_Conduct_Audit::class, 'createNCR'])->name('ncr.create');
 
 // Rute untuk proses audit (simpan checklist audit)
 Route::post('/proses_audit', [controller_Conduct_Audit::class, 'store'])->name('proses_audit');
+Route::post('/save-audit-questions', [controller_Conduct_Audit::class, 'storeAuditQuestions'])->name('save.audit.questions');
+
+Route::post('/store-audit-questions', [controller_Conduct_Audit::class, 'storeAuditQuestions']);
 
 // Rute untuk menampilkan tabel audit
 Route::get('/table', [controller_Conduct_Audit::class, 'showAuditTable'])->name('audit.table');
@@ -28,4 +33,7 @@ Route::get('/table', [controller_Conduct_Audit::class, 'showAuditTable'])->name(
 Route::get('/create', [controller_Conduct_Audit::class, 'createAuditChecklist'])->name('audit.create');
 
 // Rute untuk memperbarui audit checklist
-Route::post('/update', [controller_Conduct_Audit::class, 'updateAuditChecklist'])->name('audit.update');
+Route::get('/update', [controller_Conduct_Audit::class, 'updateAuditChecklist'])->name('audit.update');
+
+// Rute untuk menampilkan meeting audit checklist
+Route::get('/audit_meeting', [controller_Conduct_Audit::class, 'meetingAuditChecklist'])->name('audit_meeting');

@@ -1,0 +1,45 @@
+server {
+    listen 80;
+    server_name localhost;
+
+    root /var/www/public;
+    index index.php index.html index.htm;
+
+    # Security headers
+    add_header X-Frame-Options "SAMEORIGIN";
+    add_header X-XSS-Protection "1; mode=block";
+    add_header X-Content-Type-Options "nosniff";
+
+    # Laravel handling
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    # Proxy for Vite (use specific path)
+    location /vite/ {
+        proxy_pass http://localhost:5173/;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "upgrade";
+    }
+
+    # PHP-FPM Handling
+    location ~ \.php$ {
+        include fastcgi_params;
+        fastcgi_pass app-web:9000; # ganti dengan port PHP-FPM yang benar
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
+        fastcgi_param DOCUMENT_ROOT $realpath_root;
+        proxy_read_timeout 3600;
+        internal;
+    }
+
+    # Deny access to hidden files, except for .well-known
+    location ~ /\.(?!well-known).* {
+        deny all;
+    }
+}

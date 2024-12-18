@@ -28,7 +28,7 @@ class AuditController extends Controller
     {
         // Logika untuk memperbarui checklist audit
         // Ambil data dari $request dan proses sesuai kebutuhan
-
-        return redirect()->route('audit.table')->with('status', 'Checklist audit berhasil diperbarui.');
+        return view('audit.update-audit-checklist');
+        // return redirect()->route('audit.table')->with('status', 'Checklist audit berhasil diperbarui.');
     }
 }

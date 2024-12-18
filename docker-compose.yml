@@ -1,0 +1,31 @@
+
+services:
+  web:
+    image: ahermawan2193/base_laravel_img:latest
+    container_name: app-web
+    restart: unless-stopped
+    working_dir: /var/www
+    ports:
+      - "4001:9000"
+    volumes:
+      - ./web:/var/www
+    networks:
+      - my_network
+	  
+  webserver:
+    image: nginx:alpine
+    container_name: app-web-nginx
+    restart: unless-stopped
+    ports:
+      - "4002:80"
+    volumes:
+      - ./web:/var/www
+      - ./default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - my_network
+    depends_on:
+      - web
+
+networks:
+  my_network:
+    name: my_network

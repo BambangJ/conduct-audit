@@ -3,6 +3,54 @@
     display: flex;
     height: 100vh;
 }
+/* Card Styling */
+.card {
+    display: flex; /* Menggunakan Flexbox untuk fleksibilitas */
+    flex-direction: column; /* Menyusun item secara vertikal */
+    padding: 20px;
+    margin: 15px 0;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Efek bayangan */
+    transition: all 0.3s ease; /* Efek transisi untuk animasi */
+}
+
+/* Card akan menyesuaikan tinggi sesuai dengan kontennya */
+.card.flexible {
+    align-items: stretch; /* Membiarkan konten memanjang sesuai ukuran */
+    justify-content: flex-start; /* Menyusun item ke atas */
+    max-width: 100%; /* Menyediakan ruang maksimal */
+    min-height: 100px; /* Menentukan tinggi minimal */
+}
+
+/* Gaya heading dalam card */
+.card .card-header {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 10px;
+}
+
+/* Gaya konten dalam card */
+.card .card-content {
+    flex-grow: 1; /* Konten akan mengisi ruang yang tersedia */
+}
+
+/* Responsivitas untuk Card */
+@media (max-width: 768px) {
+    .card {
+        padding: 15px;
+        margin: 10px 0;
+    }
+}
+
+/* Animasi saat hover */
+.card:hover {
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Efek bayangan lebih besar */
+    transform: translateY(-2px); /* Efek mengangkat sedikit */
+}
 
 /* Sidebar */
 .sidebar {
@@ -65,8 +113,16 @@
 .container-fluid {
     padding: 20px;
 }
-/* Modal dengan latar belakang semi-transparan */
-/* Reset some default styles */
+label {
+    cursor: pointer;
+
+ }
+ 
+ #upload-attachment {
+    opacity: 0;
+    position: absolute;
+    z-index: -1;
+ }
 * {
   box-sizing: border-box;
   margin: 0;
@@ -75,7 +131,7 @@
 }
 /* Kelas utama untuk formulir */
 .audit-form {
-  width: 500px;
+  width: fit-content;
   margin: 0 auto;
   padding: 20px;
   border: 1px solid #ccc;
