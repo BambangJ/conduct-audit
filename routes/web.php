@@ -37,3 +37,9 @@ Route::get('/update', [controller_Conduct_Audit::class, 'updateAuditChecklist'])
 
 // Rute untuk menampilkan meeting audit checklist
 Route::get('/audit_meeting', [controller_Conduct_Audit::class, 'meetingAuditChecklist'])->name('audit_meeting');
+
+// Rute Sementara -r
+Route::get('approve', function()
+{
+return View::make('approval_table');
+});

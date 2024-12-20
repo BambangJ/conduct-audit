@@ -31,11 +31,11 @@
                 </div>
                 <div class="col-md-6">
                     <label for="date_of_audit">Tanggal Audit:</label>
-                    <input type="date" id="date_of_audit" name="date_of_audit" value="2024-12-12" class="form-control" required><br>
+                    <input type="date" id="date_of_audit" name="date_of_audit" value="2024-12-12" class="form-control" readonly><br>
                 </div>
                 <div class="col-md-6">
                     <label for="area_manager">Area Manager:</label>
-                    <input type="text" id="area_manager" name="area_manager" value="Ilham Kurnia" class="form-control" required><br>
+                    <input type="text" id="area_manager" name="area_manager" value="Ilham Kurnia" class="form-control" readonly><br>
                 </div>
                 <div class="col-md-6">
                     <label for="concurrence">Konkurensi:</label>
